@@ -1,0 +1,32 @@
+{
+  "name": "infiniscroll",
+  "description": "Super fast, scalable scrolling based on iScroll.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/excellenteasy/infiniscroll",
+  "author": {
+    "name": "David Pfahler",
+    "email": "david@excellenteasy.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/excellenteasy/infiniscroll.git"
+  },
+  "bugs": {
+    "url": "https://github.com/excellenteasy/infiniscroll/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/excellenteasy/infiniscroll/blob/master/LICENSE-MIT"
+    }
+  ],
+  "devDependencies": {
+    "grunt-contrib-watch": "~0.2.0",
+    "grunt": "~0.4.1"
+  },
+  "keywords": [
+    "scrolling",
+    "scroll",
+    "iscroll"
+  ]
+}
