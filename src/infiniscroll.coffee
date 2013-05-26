@@ -1,6 +1,11 @@
 # Depends on IScroll being the iscroll-probe.js version.
 class Infiniscroll
 
+  # borrowing events from IScroll
+  _execEvent: IScroll::_execEvent
+  on: IScroll::on
+  _events: {}
+
   constructor: (iscroll) ->
     # force options, just to be save. We can't use transition, because we need
     # request animation frame loop. This is implicitly done by probeType 3.
@@ -9,106 +14,115 @@ class Infiniscroll
     options.probeType = 3
 
     # create namespace for infiniscroll data and setup defaults
-    @infiniscroll =
-      cellsMoved: 0
-      # TODO: vanilla JS
-      cellHeight: options.cellHeight or $(iscroll.scroller.children[0]).outerHeight()
-      lastY: iscroll.startY or 0
-      lastX: iscroll.startX or 0
-      bufferSize: options.bufferSize or 50
-      blockSize: options.blockSize or 25
+    @blocksMoved = 0
+    @lastY       = iscroll.startY      or 0
+    @bufferSize  = options.bufferSize  or 2  # in blocks
+    @blockSize   = options.blockSize   or 10 # in cells
+    @poolSize    = @iscroll.scroller.children.length
+    @blockHeight = @iscroll.scroller.children[0].clientHeight
+    @poolHeight  = @poolSize * @blockHeight
+    @availablePoolSize = @poolSize - 2*@bufferSize
 
     # listen for all scroll events (move & animate), require "probe"
-    iscroll.on 'scroll', @_reuseCellsOnScroll
+    iscroll.on 'scroll', @_reuseCells
 
-  # borrowing events from IScroll
-  _execEvent: IScroll::_execEvent
-  on: IScroll::on
-  _events: {}
+  _reuseCells: =>
 
-  _reuseCellsOnScroll: =>
+    @direction = @iscroll.directionY
+    if @direction is 0
+      @direction = if @iscroll.y < @lastY then 1 else -1
 
-    # calculate delta y before translating
-    deltaY = @iscroll.y - @infiniscroll.lastY
+    # flip lastY is direction has changed
+    if (@lastY > @iscroll.y and @direction is -1) or (@lastY < @iscroll.y and @direction is 1)
+      @lastY = @lastY + 2*(@iscroll.y - @lastY)
+      console.log ">>> lastY flipped!"
 
-    # calculate how many cells were translated out of wrapper
-    # minus bufferSize
-    height = @infiniscroll.cellHeight
-    delta  = Math.abs(deltaY)-@infiniscroll.bufferSize
-    if delta < 0 then delta = 0
-    cellsToTranslate = Math.floor delta / height
+    # calculate delta w/o buffer
+    delta = @iscroll.y - @lastY
+    delta = Math.abs(delta)-@bufferSize*@blockHeight
+    blocksToMove = Math.floor (delta / @blockHeight)
+    return if blocksToMove <= 0
 
-    # check if we need to skip an entire poolsize worth of cells
-    # This is the case when we scroll so fast that in one frame we exceed the
-    # entire pool of elements
-    poolSize = @iscroll.scroller.children.length
-    if cellsToTranslate >= poolSize
-      # move the entire pool i times where i is the number of pools skipped
-      x = Math.floor(cellsToTranslate/poolSize)
-      indices = [@infiniscroll.cellsMoved+(x-1)*poolSize...@infiniscroll.cellsMoved+x*poolSize]
-      @_translateCells @iscroll.scroller.children, indices, x
-      cellsToTranslate = cellsToTranslate % poolSize
+    console.log "lastY: #{@lastY}"
+    console.log "iscroll.y: #{@iscroll.y}"
+    console.log "blocksToMove: #{blocksToMove}"
 
-    # only move cells if we have at least one block to move
-    if cellsToTranslate > @infiniscroll.blockSize
+    # update blocksMoved to accomodate for "skipping" entire poolsSizes
+    # @blocksMoved += Math.floor (blocksToMove / @poolSize)
+    if blocksToMove > @availablePoolSize
+      @blocksMoved += blocksToMove - @availablePoolSize
+      @lastY += -@direction * (blocksToMove - @availablePoolSize) * @blockHeight
+      console.log "more blocksToMove than @availablePoolSize, updating @blocksMoved to #{@blocksMoved}, lastY #{@lastY}"
+      blocksToMove = @availablePoolSize
 
-      cells = []
-      indices = []
+    blocks = @_findBlocksToMove blocksToMove
+    console.log "blocks", blocks
+    @_translateBlocks blocks
 
-      relativeMoved = @infiniscroll.cellsMoved % poolSize
+    console.log "lastY after translate: #{@lastY}"
 
-      # edge case: if what we have moved so far plus the cells we are going to
-      # move if greater that the total number of cells in the pool
-      # we must use the last and first cells of pool
-      # Note: 'first' and 'last' mean the node's position in the DOM, not where
-      # they currently are visible.
-      if cellsToTranslate + relativeMoved > poolSize
 
-        # first, we move the last cells in the pool
-        for i in [relativeMoved...poolSize]
-          cells.push @iscroll.scroller.children[i]
-          indices.push @infiniscroll.cellsMoved + i
-        @_translateCells cells, indices
+  # translates an array of block elements and updates values accordingly
+  _translateBlocks: (blocks) ->
+    for blockEl in blocks
+      @_translateYBlockWithIndicesToPosition blockEl, @_calculateIndices(), @_calculatePosition()
+      @blocksMoved += @direction
+      @lastY += -@direction * @blockHeight
 
-        # reset
-        cells = []
-        lastIndex = indices[indices.length-1]
-        indices = []
+  # returns an array of DOM elements to be move in that order
+  # @blocksToMove [Number] the number of blocks to be moved
+  _findBlocksToMove: (blocksToMove) ->
+    blocks = []
+    relativeMoved = @blocksMoved % @poolSize
+    if @direction is 1
+      if relativeMoved + blocksToMove >= @poolSize
+        for i in [relativeMoved...@poolSize]
+          blocks.push @iscroll.scroller.children[i]
+        remaining = blocksToMove - (@poolSize-relativeMoved)
 
-        # now we move the rest of the cells from the beginning the pool
-        for i in [0..cellsToTranslate-(poolSize-relativeMoved)]
-          cells.push @iscroll.scroller.children[i]
-          indices.push lastIndex + 1 + i
-
-      # We have enough cells left before the end of the buffer, so we can
-      # go on transforming cells.
+        for i in [0...remaining]
+          blocks.push @iscroll.scroller.children[i]
       else
-        for i in [relativeMoved...relativeMoved+cellsToTranslate]
-          cells.push @iscroll.scroller.children[i]
-          indices.push @infiniscroll.cellsMoved + i
+          blocks.push @iscroll.scroller.children[i] for i in [relativeMoved...(relativeMoved+blocksToMove)]
+    else
+      if relativeMoved is 0 then relativeMoved = 10
+      if relativeMoved - blocksToMove < 0
+        for i in [relativeMoved-1...0]
+          blocks.push @iscroll.scroller.children[i]
+        remaining = blocksToMove - relativeMoved
 
-      @_translateCells cells, indices
+        for i in [@poolSize-1...@poolSize-remaining]
+          blocks.push @iscroll.scroller.children[i]
+      else
+        for i in [relativeMoved-1..(relativeMoved-blocksToMove)]
+          blocks.push @iscroll.scroller.children[i]
+    if blocks.length is 0 then debugger
+    return blocks
 
-  # Translates a number of cells to the bottom of the buffer.
-  # @param cells [Array] DOM nodes
-  # @param indices [Array] map of indices corresponing to cells array
-  # @pram factor [Number] how many times the poolsize is taken into account
-  _translateCells: (cells, indices, factor=1) ->
-    # determine cell height
-    cellHeight = @infiniscroll.cellHeight
-    poolSize = @iscroll.scroller.children.length
-    timesMoved = Math.floor @infiniscroll.cellsMoved/poolSize+1
-    #setTimeout =>
-    for cell, i in cells
-      cell.style[@iscroll.utils.style.transform]='translateY('+timesMoved*factor*poolSize*cellHeight+'px)'
-      # fire event so user can change the content of the cell
-      # index is the number of the cell in the application logic, so this can be
-      # anything from 0 to the very last cell that can be scrolled to.
-      do (cell) => @_execEvent 'reuseCellForIndex', cell, indices[i]
-    #, 0
+  # Calculates indices for cells in a block to be moved
+  # @param direction [Number] either 1 to move to the bottom or -1 to move to the top
+  _calculateIndices: ->
+    poolsMoved = Math.floor (@blocksMoved * @blockHeight) / @poolHeight
+    start = (poolsMoved + @direction) * @poolSize * @blockSize
+    end   = start + @blockSize
+    return [start...end]
 
-    @infiniscroll.cellsMoved += cells.length
-    # reset lastY
-    @infiniscroll.lastY -= cells.length * @infiniscroll.cellHeight
+  # Calculates position to move block to
+  # @param direction [Number] either 1 to move to the bottom or -1 to move to the top
+  _calculatePosition: ->
+    poolsMoved = Math.floor (@blocksMoved * @blockHeight) / @poolHeight
+    console.log "calculated position: #{(poolsMoved + @direction) * @poolHeight}"
+    if @direction is 1
+      return (poolsMoved + @direction) * @poolHeight
+    else
+      return poolsMoved * @poolHeight
+
+  # Translate a block of cells to position and emit an event to reuse block
+  # for a range of indices.
+  _translateYBlockWithIndicesToPosition: (blockEl, indices, position) ->
+    blockEl.style[@iscroll.utils.style.transform]='translateY('+position+'px)'
+    console.log ">>>> block moved:", blockEl
+    # fire event so user can change the content of the block's cells.
+    @_execEvent 'reuseBlockWithCellIndices', blockEl, indices
 
 window.Infiniscroll = Infiniscroll
