@@ -13,7 +13,7 @@ module.exports = (grunt) ->
     watch:
       lib:
         files: ['src/**/*']
-        tasks: ['coffee:src']
+        tasks: ['coffee:lib']
 
   # TASKS
   grunt.registerTask 'default', ['coffee:lib', 'watch']

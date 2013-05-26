@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+
+<title>iScroll demo: simple</title>
+
+<script type="text/javascript" src="lib/jquery-2.0.1.min.js"></script>
+<script type="text/javascript" src="lib/lodash.js"></script>
+<script type="text/javascript" src="lib/iscroll-probe-utils.js"></script>
+<script type="text/javascript" src="../build/infiniscroll.js"></script>
+
+<script type="text/javascript">
+
+var myScroll;
+
+function loaded () {
+  myScroll = new IScroll('#wrapper', {
+    useTransition: false,
+    scrollbars: true,
+    probeType: 3
+  });
+
+  new Infiniscroll(myScroll).on('reuseCellForIndex', function(cell, index) {
+    cell.innerHTML = 'Pretty row '+(index+1);
+  });
+}
+
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+
+</script>
+
+<style type="text/css">
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  -ms-touch-action: none;
+}
+
+body,ul,li {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+body {
+  font-size: 12px;
+  font-family: ubuntu, helvetica, arial;
+  overflow: hidden; /* this is important to prevent the whole page to bounce */
+}
+
+#header {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 45px;
+  line-height: 45px;
+  background: #CD235C;
+  padding: 0;
+  color: #eee;
+  font-size: 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+#footer {
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 48px;
+  background: #444;
+  padding: 0;
+  border-top: 1px solid #444;
+}
+
+#wrapper {
+  position: absolute;
+  z-index: 1;
+  top: 45px;
+  bottom: 48px;
+  left: 0;
+  width: 100%;
+  background: #ccc;
+  overflow: hidden;
+}
+
+#scroller {
+  position: absolute;
+  z-index: 1;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  width: 100%;
+  height: 400000px;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  -ms-text-size-adjust: none;
+  -o-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+#scroller ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  text-align: left;
+}
+
+#scroller div {
+  padding: 0 10px;
+  height: 40px;
+  line-height: 40px;
+  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #fff;
+  background-color: #fafafa;
+  font-size: 14px;
+}
+
+</style>
+</head>
+<body onload="loaded()">
+<div id="header">iScroll</div>
+
+<div id="wrapper">
+  <div id="scroller">
+    <div>Pretty row 1</div>
+    <div>Pretty row 2</div>
+    <div>Pretty row 3</div>
+    <div>Pretty row 4</div>
+    <div>Pretty row 5</div>
+    <div>Pretty row 6</div>
+    <div>Pretty row 7</div>
+    <div>Pretty row 8</div>
+    <div>Pretty row 9</div>
+    <div>Pretty row 10</div>
+    <div>Pretty row 11</div>
+    <div>Pretty row 12</div>
+    <div>Pretty row 13</div>
+    <div>Pretty row 14</div>
+    <div>Pretty row 15</div>
+    <div>Pretty row 16</div>
+    <div>Pretty row 17</div>
+    <div>Pretty row 18</div>
+    <div>Pretty row 19</div>
+    <div>Pretty row 20</div>
+    <div>Pretty row 21</div>
+    <div>Pretty row 22</div>
+    <div>Pretty row 23</div>
+    <div>Pretty row 24</div>
+    <div>Pretty row 25</div>
+    <div>Pretty row 26</div>
+    <div>Pretty row 27</div>
+    <div>Pretty row 28</div>
+    <div>Pretty row 29</div>
+    <div>Pretty row 30</div>
+    <div>Pretty row 31</div>
+    <div>Pretty row 32</div>
+    <div>Pretty row 33</div>
+    <div>Pretty row 34</div>
+    <div>Pretty row 35</div>
+    <div>Pretty row 36</div>
+    <div>Pretty row 37</div>
+    <div>Pretty row 38</div>
+    <div>Pretty row 39</div>
+    <div>Pretty row 40</div>
+    <div>Pretty row 41</div>
+    <div>Pretty row 42</div>
+    <div>Pretty row 43</div>
+    <div>Pretty row 44</div>
+    <div>Pretty row 45</div>
+    <div>Pretty row 46</div>
+    <div>Pretty row 47</div>
+    <div>Pretty row 48</div>
+    <div>Pretty row 49</div>
+    <div>Pretty row 50</div>
+    <div>Pretty row 1</div>
+    <div>Pretty row 2</div>
+    <div>Pretty row 3</div>
+    <div>Pretty row 4</div>
+    <div>Pretty row 5</div>
+    <div>Pretty row 6</div>
+    <div>Pretty row 7</div>
+    <div>Pretty row 8</div>
+    <div>Pretty row 9</div>
+    <div>Pretty row 10</div>
+    <div>Pretty row 11</div>
+    <div>Pretty row 12</div>
+    <div>Pretty row 13</div>
+    <div>Pretty row 14</div>
+    <div>Pretty row 15</div>
+    <div>Pretty row 16</div>
+    <div>Pretty row 17</div>
+    <div>Pretty row 18</div>
+    <div>Pretty row 19</div>
+    <div>Pretty row 20</div>
+    <div>Pretty row 21</div>
+    <div>Pretty row 22</div>
+    <div>Pretty row 23</div>
+    <div>Pretty row 24</div>
+    <div>Pretty row 25</div>
+    <div>Pretty row 26</div>
+    <div>Pretty row 27</div>
+    <div>Pretty row 28</div>
+    <div>Pretty row 29</div>
+    <div>Pretty row 30</div>
+    <div>Pretty row 31</div>
+    <div>Pretty row 32</div>
+    <div>Pretty row 33</div>
+    <div>Pretty row 34</div>
+    <div>Pretty row 35</div>
+    <div>Pretty row 36</div>
+    <div>Pretty row 37</div>
+    <div>Pretty row 38</div>
+    <div>Pretty row 39</div>
+    <div>Pretty row 40</div>
+    <div>Pretty row 41</div>
+    <div>Pretty row 42</div>
+    <div>Pretty row 43</div>
+    <div>Pretty row 44</div>
+    <div>Pretty row 45</div>
+    <div>Pretty row 46</div>
+    <div>Pretty row 47</div>
+    <div>Pretty row 48</div>
+    <div>Pretty row 49</div>
+    <div>Pretty row 50</div>
+    <div>Pretty row 1</div>
+    <div>Pretty row 2</div>
+    <div>Pretty row 3</div>
+    <div>Pretty row 4</div>
+    <div>Pretty row 5</div>
+    <div>Pretty row 6</div>
+    <div>Pretty row 7</div>
+    <div>Pretty row 8</div>
+    <div>Pretty row 9</div>
+    <div>Pretty row 10</div>
+    <div>Pretty row 11</div>
+    <div>Pretty row 12</div>
+    <div>Pretty row 13</div>
+    <div>Pretty row 14</div>
+    <div>Pretty row 15</div>
+    <div>Pretty row 16</div>
+    <div>Pretty row 17</div>
+    <div>Pretty row 18</div>
+    <div>Pretty row 19</div>
+    <div>Pretty row 20</div>
+    <div>Pretty row 21</div>
+    <div>Pretty row 22</div>
+    <div>Pretty row 23</div>
+    <div>Pretty row 24</div>
+    <div>Pretty row 25</div>
+    <div>Pretty row 26</div>
+    <div>Pretty row 27</div>
+    <div>Pretty row 28</div>
+    <div>Pretty row 29</div>
+    <div>Pretty row 30</div>
+    <div>Pretty row 31</div>
+    <div>Pretty row 32</div>
+    <div>Pretty row 33</div>
+    <div>Pretty row 34</div>
+    <div>Pretty row 35</div>
+    <div>Pretty row 36</div>
+    <div>Pretty row 37</div>
+    <div>Pretty row 38</div>
+    <div>Pretty row 39</div>
+    <div>Pretty row 40</div>
+    <div>Pretty row 41</div>
+    <div>Pretty row 42</div>
+    <div>Pretty row 43</div>
+    <div>Pretty row 44</div>
+    <div>Pretty row 45</div>
+    <div>Pretty row 46</div>
+    <div>Pretty row 47</div>
+    <div>Pretty row 48</div>
+    <div>Pretty row 49</div>
+    <div>Pretty row 50</div>
+    <div>Pretty row 1</div>
+    <div>Pretty row 2</div>
+    <div>Pretty row 3</div>
+    <div>Pretty row 4</div>
+    <div>Pretty row 5</div>
+    <div>Pretty row 6</div>
+    <div>Pretty row 7</div>
+    <div>Pretty row 8</div>
+    <div>Pretty row 9</div>
+    <div>Pretty row 10</div>
+    <div>Pretty row 11</div>
+    <div>Pretty row 12</div>
+    <div>Pretty row 13</div>
+    <div>Pretty row 14</div>
+    <div>Pretty row 15</div>
+    <div>Pretty row 16</div>
+    <div>Pretty row 17</div>
+    <div>Pretty row 18</div>
+    <div>Pretty row 19</div>
+    <div>Pretty row 20</div>
+    <div>Pretty row 21</div>
+    <div>Pretty row 22</div>
+    <div>Pretty row 23</div>
+    <div>Pretty row 24</div>
+    <div>Pretty row 25</div>
+    <div>Pretty row 26</div>
+    <div>Pretty row 27</div>
+    <div>Pretty row 28</div>
+    <div>Pretty row 29</div>
+    <div>Pretty row 30</div>
+    <div>Pretty row 31</div>
+    <div>Pretty row 32</div>
+    <div>Pretty row 33</div>
+    <div>Pretty row 34</div>
+    <div>Pretty row 35</div>
+    <div>Pretty row 36</div>
+    <div>Pretty row 37</div>
+    <div>Pretty row 38</div>
+    <div>Pretty row 39</div>
+    <div>Pretty row 40</div>
+    <div>Pretty row 41</div>
+    <div>Pretty row 42</div>
+    <div>Pretty row 43</div>
+    <div>Pretty row 44</div>
+    <div>Pretty row 45</div>
+    <div>Pretty row 46</div>
+    <div>Pretty row 47</div>
+    <div>Pretty row 48</div>
+    <div>Pretty row 49</div>
+    <div>Pretty row 50</div>
+  </div>
+</div>
+
+<div id="footer"></div>
+
+</body>
+</html>
