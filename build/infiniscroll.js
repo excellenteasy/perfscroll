@@ -18,7 +18,7 @@
       options.probeType = 3;
       this.blocksMoved = 0;
       this.lastY = iscroll.startY || 0;
-      this.bufferSize = options.bufferSize || 2;
+      this.bufferSize = options.bufferSize || 6;
       this.blockSize = options.blockSize || 10;
       this.poolSize = this.iscroll.scroller.children.length;
       this.blockHeight = this.iscroll.scroller.children[0].clientHeight;
@@ -118,8 +118,8 @@
     Infiniscroll.prototype._calculateIndices = function() {
       var end, poolsMoved, start, _i, _results;
 
-      poolsMoved = Math.floor((this.blocksMoved * this.blockHeight) / this.poolHeight);
-      start = (poolsMoved + this.direction) * this.poolSize * this.blockSize;
+      poolsMoved = Math.floor(this.blocksMoved / this.poolSize);
+      start = ((poolsMoved + this.direction) * this.poolSize + (this.blocksMoved % this.poolSize)) * this.blockSize;
       end = start + this.blockSize;
       return (function() {
         _results = [];

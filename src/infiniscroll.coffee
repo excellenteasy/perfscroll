@@ -102,8 +102,8 @@ class Infiniscroll
   # Calculates indices for cells in a block to be moved
   # @param direction [Number] either 1 to move to the bottom or -1 to move to the top
   _calculateIndices: ->
-    poolsMoved = Math.floor (@blocksMoved * @blockHeight) / @poolHeight
-    start = (poolsMoved + @direction) * @poolSize * @blockSize
+    poolsMoved = Math.floor (@blocksMoved / @poolSize)
+    start = ((poolsMoved + @direction) * @poolSize + (@blocksMoved % @poolSize)) * @blockSize
     end   = start + @blockSize
     return [start...end]
 
