@@ -85,7 +85,7 @@ class Infiniscroll
       else
           blocks.push @iscroll.scroller.children[i] for i in [relativeMoved...(relativeMoved+blocksToMove)]
     else
-      if relativeMoved is 0 then relativeMoved = 10
+      if relativeMoved is 0 then relativeMoved = @poolSize
       if relativeMoved - blocksToMove < 0
         for i in [relativeMoved-1...0]
           blocks.push @iscroll.scroller.children[i]

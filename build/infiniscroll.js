@@ -18,7 +18,7 @@
       options.probeType = 3;
       this.blocksMoved = 0;
       this.lastY = iscroll.startY || 0;
-      this.bufferSize = options.bufferSize || 6;
+      this.bufferSize = options.bufferSize || 2;
       this.blockSize = options.blockSize || 10;
       this.poolSize = this.iscroll.scroller.children.length;
       this.blockHeight = this.iscroll.scroller.children[0].clientHeight;
@@ -93,7 +93,7 @@
         }
       } else {
         if (relativeMoved === 0) {
-          relativeMoved = 10;
+          relativeMoved = this.poolSize;
         }
         if (relativeMoved - blocksToMove < 0) {
           for (i = _l = _ref2 = relativeMoved - 1; _ref2 <= 0 ? _l < 0 : _l > 0; i = _ref2 <= 0 ? ++_l : --_l) {
