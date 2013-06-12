@@ -15,9 +15,13 @@ class Infiniscroll
 
     # create namespace for infiniscroll data and setup defaults
     @blocksMoved = 0
+    # where the scroller was in the last animation frame
     @lastY       = iscroll.startY      or 0
-    @bufferSize  = options.bufferSize  or 2  # in blocks
-    @blockSize   = options.blockSize   or 10 # in cells
+    # marks the last position where blocks were moved
+    @marker      = iscroll.startY      or 0
+    @bufferSize  = options.bufferSize  or 5  # in blocks
+    # size of a block in cells
+    @blockSize   = options.blockSize   or @iscroll.scroller.children[0].children.length
     @poolSize    = @iscroll.scroller.children.length
     @blockHeight = @iscroll.scroller.children[0].clientHeight
     @poolHeight  = @poolSize * @blockHeight
@@ -28,38 +32,47 @@ class Infiniscroll
 
   _reuseCells: =>
 
-    @direction = @iscroll.directionY
-    if @direction is 0
-      @direction = if @iscroll.y < @lastY then 1 else -1
+    # determine direction b/c iscroll reports false directionY sometimes which
+    # happens because it calculates deltaY false sometimes
+    @direction =
+      if @iscroll.y is @lastY
+        @direction or -1
+      else if @iscroll.y > @lastY
+        -1
+      else
+        1
+    @lastY = @iscroll.y
 
-    # flip lastY is direction has changed
-    if (@lastY > @iscroll.y and @direction is -1) or (@lastY < @iscroll.y and @direction is 1)
-      @lastY = @lastY + 2*(@iscroll.y - @lastY)
-      console.log ">>> lastY flipped!"
+    # flip marker is direction has changed
+    if (@marker > @iscroll.y and @direction is -1) or (@marker < @iscroll.y and @direction is 1)
+      # console.log ">>> marker flipped: direction: #{@direction}, marker before flip: #{@marker}"
+      @marker = @marker + 2*(@iscroll.y - @marker)
 
     # calculate delta w/o buffer
-    delta = @iscroll.y - @lastY
+    delta = @iscroll.y - @marker
     delta = Math.abs(delta)-@bufferSize*@blockHeight
     blocksToMove = Math.floor (delta / @blockHeight)
     return if blocksToMove <= 0
 
-    console.log "lastY: #{@lastY}"
-    console.log "iscroll.y: #{@iscroll.y}"
-    console.log "blocksToMove: #{blocksToMove}"
+    # console.log "marker: #{@marker}"
+    # console.log "iscroll.y: #{@iscroll.y}"
+    # console.log "blocksToMove: #{blocksToMove}"
 
     # update blocksMoved to accomodate for "skipping" entire poolsSizes
     # @blocksMoved += Math.floor (blocksToMove / @poolSize)
     if blocksToMove > @availablePoolSize
+      # TODO: do not rerender all cells immediatelly when we move all blocks
+      # but in batches or frames will be dropped
       @blocksMoved += blocksToMove - @availablePoolSize
-      @lastY += -@direction * (blocksToMove - @availablePoolSize) * @blockHeight
-      console.log "more blocksToMove than @availablePoolSize, updating @blocksMoved to #{@blocksMoved}, lastY #{@lastY}"
+      @marker += -@direction * (blocksToMove - @availablePoolSize) * @blockHeight
+      # console.log "more blocksToMove than @availablePoolSize, updating @blocksMoved to #{@blocksMoved}, marker #{@marker}"
       blocksToMove = @availablePoolSize
 
     blocks = @_findBlocksToMove blocksToMove
-    console.log "blocks", blocks
+    # console.log "blocks", blocks
     @_translateBlocks blocks
 
-    console.log "lastY after translate: #{@lastY}"
+    # console.log "marker after translate: #{@marker}"
 
 
   # translates an array of block elements and updates values accordingly
@@ -67,7 +80,7 @@ class Infiniscroll
     for blockEl in blocks
       @_translateYBlockWithIndicesToPosition blockEl, @_calculateIndices(), @_calculatePosition()
       @blocksMoved += @direction
-      @lastY += -@direction * @blockHeight
+      @marker += -@direction * @blockHeight
 
   # returns an array of DOM elements to be move in that order
   # @blocksToMove [Number] the number of blocks to be moved
@@ -110,18 +123,20 @@ class Infiniscroll
   # Calculates position to move block to
   # @param direction [Number] either 1 to move to the bottom or -1 to move to the top
   _calculatePosition: ->
-    poolsMoved = Math.floor (@blocksMoved * @blockHeight) / @poolHeight
-    console.log "calculated position: #{(poolsMoved + @direction) * @poolHeight}"
     if @direction is 1
+      poolsMoved = Math.floor (@blocksMoved * @blockHeight) / @poolHeight
+      # console.log "calculated position: #{(poolsMoved + @direction) * @poolHeight}; for block #{@blocksMoved}"
       return (poolsMoved + @direction) * @poolHeight
     else
+      poolsMoved = Math.floor ((@blocksMoved-1) * @blockHeight) / @poolHeight
+      # console.log "calculated position: #{poolsMoved * @poolHeight}; for block #{@blocksMoved}"
       return poolsMoved * @poolHeight
 
   # Translate a block of cells to position and emit an event to reuse block
   # for a range of indices.
   _translateYBlockWithIndicesToPosition: (blockEl, indices, position) ->
     blockEl.style[@iscroll.utils.style.transform]='translateY('+position+'px)'
-    console.log ">>>> block moved:", blockEl
+    # console.log ">>>> block moved:", blockEl
     # fire event so user can change the content of the block's cells.
     @_execEvent 'reuseBlockWithCellIndices', blockEl, indices
 

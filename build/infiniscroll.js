@@ -18,8 +18,9 @@
       options.probeType = 3;
       this.blocksMoved = 0;
       this.lastY = iscroll.startY || 0;
-      this.bufferSize = options.bufferSize || 2;
-      this.blockSize = options.blockSize || 10;
+      this.marker = iscroll.startY || 0;
+      this.bufferSize = options.bufferSize || 5;
+      this.blockSize = options.blockSize || this.iscroll.scroller.children[0].children.length;
       this.poolSize = this.iscroll.scroller.children.length;
       this.blockHeight = this.iscroll.scroller.children[0].clientHeight;
       this.poolHeight = this.poolSize * this.blockHeight;
@@ -30,33 +31,24 @@
     Infiniscroll.prototype._reuseCells = function() {
       var blocks, blocksToMove, delta;
 
-      this.direction = this.iscroll.directionY;
-      if (this.direction === 0) {
-        this.direction = this.iscroll.y < this.lastY ? 1 : -1;
+      this.direction = this.iscroll.y === this.lastY ? this.direction || -1 : this.iscroll.y > this.lastY ? -1 : 1;
+      this.lastY = this.iscroll.y;
+      if ((this.marker > this.iscroll.y && this.direction === -1) || (this.marker < this.iscroll.y && this.direction === 1)) {
+        this.marker = this.marker + 2 * (this.iscroll.y - this.marker);
       }
-      if ((this.lastY > this.iscroll.y && this.direction === -1) || (this.lastY < this.iscroll.y && this.direction === 1)) {
-        this.lastY = this.lastY + 2 * (this.iscroll.y - this.lastY);
-        console.log(">>> lastY flipped!");
-      }
-      delta = this.iscroll.y - this.lastY;
+      delta = this.iscroll.y - this.marker;
       delta = Math.abs(delta) - this.bufferSize * this.blockHeight;
       blocksToMove = Math.floor(delta / this.blockHeight);
       if (blocksToMove <= 0) {
         return;
       }
-      console.log("lastY: " + this.lastY);
-      console.log("iscroll.y: " + this.iscroll.y);
-      console.log("blocksToMove: " + blocksToMove);
       if (blocksToMove > this.availablePoolSize) {
         this.blocksMoved += blocksToMove - this.availablePoolSize;
-        this.lastY += -this.direction * (blocksToMove - this.availablePoolSize) * this.blockHeight;
-        console.log("more blocksToMove than @availablePoolSize, updating @blocksMoved to " + this.blocksMoved + ", lastY " + this.lastY);
+        this.marker += -this.direction * (blocksToMove - this.availablePoolSize) * this.blockHeight;
         blocksToMove = this.availablePoolSize;
       }
       blocks = this._findBlocksToMove(blocksToMove);
-      console.log("blocks", blocks);
-      this._translateBlocks(blocks);
-      return console.log("lastY after translate: " + this.lastY);
+      return this._translateBlocks(blocks);
     };
 
     Infiniscroll.prototype._translateBlocks = function(blocks) {
@@ -67,7 +59,7 @@
         blockEl = blocks[_i];
         this._translateYBlockWithIndicesToPosition(blockEl, this._calculateIndices(), this._calculatePosition());
         this.blocksMoved += this.direction;
-        _results.push(this.lastY += -this.direction * this.blockHeight);
+        _results.push(this.marker += -this.direction * this.blockHeight);
       }
       return _results;
     };
@@ -131,18 +123,17 @@
     Infiniscroll.prototype._calculatePosition = function() {
       var poolsMoved;
 
-      poolsMoved = Math.floor((this.blocksMoved * this.blockHeight) / this.poolHeight);
-      console.log("calculated position: " + ((poolsMoved + this.direction) * this.poolHeight));
       if (this.direction === 1) {
+        poolsMoved = Math.floor((this.blocksMoved * this.blockHeight) / this.poolHeight);
         return (poolsMoved + this.direction) * this.poolHeight;
       } else {
+        poolsMoved = Math.floor(((this.blocksMoved - 1) * this.blockHeight) / this.poolHeight);
         return poolsMoved * this.poolHeight;
       }
     };
 
     Infiniscroll.prototype._translateYBlockWithIndicesToPosition = function(blockEl, indices, position) {
       blockEl.style[this.iscroll.utils.style.transform] = 'translateY(' + position + 'px)';
-      console.log(">>>> block moved:", blockEl);
       return this._execEvent('reuseBlockWithCellIndices', blockEl, indices);
     };
 
